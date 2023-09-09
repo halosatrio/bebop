@@ -1,7 +1,8 @@
+// models/user.go
 package models
 
 type User struct {
-	ID       int    `db:"id" json:"id"`
+	ID       int64  `db:"id" json:"id"`
 	Email    string `db:"email" json:"email"`
-	Password string `db:"password" json:"password"` // this will store the hashed password
+	Password string `db:"password"` // Don't output password in JSON
 }

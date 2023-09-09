@@ -1,30 +1,17 @@
 package main
 
 import (
-	"log"
-
 	"github.com/halosatrio/bebop/config"
-	"github.com/halosatrio/bebop/service"
-	"github.com/halosatrio/bebop/service/delivery"
-	postgres "github.com/halosatrio/bebop/service/repository"
+	"github.com/halosatrio/bebop/db"
+	"github.com/halosatrio/bebop/router"
 )
 
 func main() {
-	// Initialize configurations
-	config.InitConfig()
+	config.LoadEnv()
+	r := router.SetupRouter()
 
-	// Initialize PostgreSQL connection
-	db := postgres.ConnectDB()
+	db, _ := db.InitDB()
 	defer db.Close()
 
-	// Initialize Gin router
-	router := delivery.InitRouter()
-
-	var generalUseCase service.GeneralUseCase
-	delivery.CreateHandler(router, generalUseCase)
-
-	// Run the Gin server
-	router.Run()
-
-	log.Fatal(router.Run(":8080"))
+	r.Run(":8080")
 }
