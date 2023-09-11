@@ -7,10 +7,10 @@ import (
 
 func main() {
 	config.LoadEnv()
-	r := router.SetupRouter()
 
 	db := config.ConnectDB()
 	defer db.Close()
 
+	r := router.SetupRouter(db)
 	r.Run(":8080")
 }
