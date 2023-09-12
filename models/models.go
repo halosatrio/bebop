@@ -2,10 +2,12 @@ package models
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
-	ID        string    `json:"id"`
+	ID        uuid.UUID `json:"id"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"created_at"`
@@ -13,8 +15,8 @@ type User struct {
 }
 
 type Habit struct {
-	ID         string    `json:"id"`
-	UserID     string    `json:"user_id"`
+	ID         uuid.UUID `json:"id"`
+	UserID     uuid.UUID `json:"user_id"`
 	Title      string    `json:"title"`
 	Icon       string    `json:"icon"`
 	Color      string    `json:"color"`
