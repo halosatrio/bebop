@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/halosatrio/bebop/models"
 	"github.com/halosatrio/bebop/service"
+	"github.com/halosatrio/bebop/utils"
 )
 
 type UserHandler struct {
@@ -42,7 +43,10 @@ func (h *UserHandler) Authenticate(c *gin.Context) {
 		return
 	}
 
-	// TODO: Generate and return JWT here.
-	token := "YOUR_JWT"
+	token, err := utils.GenerateJWT(&user)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to generate token."})
+		return
+	}
 	c.JSON(200, gin.H{"token": token})
 }

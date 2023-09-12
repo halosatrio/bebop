@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/halosatrio/bebop/models"
 	"github.com/halosatrio/bebop/repository"
@@ -29,6 +30,7 @@ func (s *UserService) Register(user models.User) error {
 func (s *UserService) Authenticate(email, password string) (bool, error) {
 	user, err := s.repo.FindByEmail(email)
 	if err != nil {
+		fmt.Println(err)
 		return false, err
 	}
 

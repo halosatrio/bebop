@@ -7,14 +7,15 @@ import (
 	"github.com/halosatrio/bebop/models"
 )
 
-var jwtKey = []byte("your_secret_key") // This should be moved to an environment variable or config file
+// This should be moved to an environment variable or config file
+var jwtKey = []byte("your_secret_key")
 
 func GenerateJWT(user *models.User) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["sub"] = user.ID
-	claims["email"] = user.Email
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // token will expire after 24 hours
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":   user.ID,
+		"email": user.Email,
+		"exp":   time.Now().Add(time.Hour * 24).Unix(),
+	})
 
 	return token.SignedString(jwtKey)
 }
