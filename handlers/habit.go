@@ -26,6 +26,9 @@ func (h *HabitHandler) CreateHabit(c *gin.Context) {
 	// Set the user ID from JWT middleware
 	habit.UserID = c.MustGet("user_id").(uuid.UUID)
 
+	// fmt.Println("user_id", c.MustGet("user_id"))
+	// fmt.Println("email", c.MustGet("email"))
+
 	err := h.service.CreateHabit(&habit)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Failed to create habit"})

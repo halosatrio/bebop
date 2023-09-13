@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/halosatrio/bebop/models"
 	"github.com/halosatrio/bebop/service"
@@ -42,6 +44,7 @@ func (h *UserHandler) Authenticate(c *gin.Context) {
 		c.JSON(401, gin.H{"error": "Authentication failed."})
 		return
 	}
+	fmt.Print("handler", user)
 
 	token, err := utils.GenerateJWT(&user)
 	if err != nil {

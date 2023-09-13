@@ -34,6 +34,8 @@ func (s *UserService) Authenticate(email, password string) (bool, error) {
 		return false, err
 	}
 
+	fmt.Println("service", user)
+
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		return false, errors.New("invalid credentials")

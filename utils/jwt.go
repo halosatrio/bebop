@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -11,6 +12,7 @@ import (
 var jwtKey = []byte("your_secret_key")
 
 func GenerateJWT(user *models.User) (string, error) {
+	fmt.Print("utils jwt", user)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub":   user.ID,
 		"email": user.Email,
@@ -18,18 +20,4 @@ func GenerateJWT(user *models.User) (string, error) {
 	})
 
 	return token.SignedString(jwtKey)
-}
-
-func ValidateJWT(tokenStr string) (int, error) {
-	claims := &jwt.MapClaims{}
-	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
-	})
-
-	if claims, ok := token.Claims.(*jwt.MapClaims); ok && token.Valid {
-		userID := (*claims)["sub"].(int)
-		return userID, nil
-	}
-
-	return 0, err
 }
