@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -9,14 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// middleware/jwt.go
 var jwtKey = []byte("your_secret_key")
 
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
-
-		// fmt.Println(authHeader)
 
 		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header not provided"})
@@ -38,7 +34,6 @@ func JWTAuth() gin.HandlerFunc {
 		})
 
 		if err != nil {
-			fmt.Println("here")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
@@ -46,13 +41,10 @@ func JWTAuth() gin.HandlerFunc {
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok || !token.Valid {
-			fmt.Println("here hehe")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
 		}
-
-		fmt.Println(claims)
 
 		c.Set("user_id", claims["sub"].(string))
 		c.Set("email", claims["email"].(string))

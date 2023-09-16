@@ -34,6 +34,5 @@ func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("repo", user.ID)
 	return user, nil
 }
