@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/halosatrio/bebop/models"
 	"github.com/halosatrio/bebop/service"
@@ -33,20 +31,19 @@ func (h *UserHandler) Register(c *gin.Context) {
 }
 
 func (h *UserHandler) Authenticate(c *gin.Context) {
-	var user models.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var reqUser models.User
+	if err := c.ShouldBindJSON(&reqUser); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	isValid, err := h.service.Authenticate(user.Email, user.Password)
-	if err != nil || !isValid {
+	user, err := h.service.Authenticate(reqUser.Email, reqUser.Password)
+	if err != nil || user == nil {
 		c.JSON(401, gin.H{"error": "Authentication failed."})
 		return
 	}
-	fmt.Print("handler", user)
 
-	token, err := utils.GenerateJWT(&user)
+	token, err := utils.GenerateJWT(user)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Failed to generate token."})
 		return

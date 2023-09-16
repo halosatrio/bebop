@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/halosatrio/bebop/models"
 	"github.com/halosatrio/bebop/repository"
@@ -27,19 +26,16 @@ func (s *UserService) Register(user models.User) error {
 	return s.repo.Store(user)
 }
 
-func (s *UserService) Authenticate(email, password string) (bool, error) {
+func (s *UserService) Authenticate(email, password string) (*models.User, error) {
 	user, err := s.repo.FindByEmail(email)
 	if err != nil {
-		fmt.Println(err)
-		return false, err
+		return nil, err
 	}
-
-	fmt.Println("service", user)
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return false, errors.New("invalid credentials")
+		return nil, errors.New("invalid credentials")
 	}
 
-	return true, nil
+	return user, nil
 }
