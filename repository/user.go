@@ -16,13 +16,15 @@ func NewUserRepository(DB *sql.DB) *UserRepository {
 	return &UserRepository{DB: DB}
 }
 
-func (r *UserRepository) Store(user models.User) error {
+func (r *UserRepository) Store(registerReq models.AuthRequset) error {
+	var user models.User
+
 	currentTime := time.Now()
 	user.CreatedAt = currentTime
 	user.UpdatedAt = currentTime
 
 	query := `INSERT INTO bebop.users (email, password, created_at, updated_at) VALUES ($1, $2, $3, $4)`
-	_, err := r.DB.Exec(query, user.Email, user.Password, user.CreatedAt, user.UpdatedAt)
+	_, err := r.DB.Exec(query, registerReq.Email, registerReq.Password, user.CreatedAt, user.UpdatedAt)
 	fmt.Print(err)
 	return err
 }

@@ -16,14 +16,14 @@ func NewUserService(r *repository.UserRepository) *UserService {
 	return &UserService{repo: r}
 }
 
-func (s *UserService) Register(user models.User) error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+func (s *UserService) Register(registerReq models.AuthRequset) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(registerReq.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	user.Password = string(hashedPassword)
-	return s.repo.Store(user)
+	registerReq.Password = string(hashedPassword)
+	return s.repo.Store(registerReq)
 }
 
 func (s *UserService) Authenticate(email, password string) (*models.User, error) {
