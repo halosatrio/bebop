@@ -1,32 +1,28 @@
-package router
+package handlers
 
 import (
 	"database/sql"
 
 	"github.com/gin-gonic/gin"
-	"github.com/halosatrio/bebop/handlers"
-	"github.com/halosatrio/bebop/middleware"
 	"github.com/halosatrio/bebop/repository"
-	"github.com/halosatrio/bebop/service"
+	"github.com/halosatrio/bebop/utils"
 )
 
 func SetupRouter(db *sql.DB) *gin.Engine {
 	r := gin.Default()
 
 	userRepo := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepo)
-	userHandler := handlers.NewUserHandler(userService)
+	userHandler := NewUserHandler(userRepo)
 
 	habitRepo := repository.NewHabitRepository(db)
-	habitService := service.NewHabitService(habitRepo)
-	habitHandler := handlers.NewHabitHandler(habitService)
+	habitHandler := NewHabitHandler(habitRepo)
 
-	r.GET("/test", handlers.Welcome)
+	r.GET("/test", Welcome)
 	r.POST("/register", userHandler.Register)
 	r.POST("/auth", userHandler.Authenticate)
 
 	private := r.Group("/")
-	private.Use(middleware.JWTAuth())
+	private.Use(utils.JWTAuth())
 	private.POST("/create-habit", habitHandler.CreateHabit)
 	private.GET("/habits", habitHandler.GetHabits)
 

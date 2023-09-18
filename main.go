@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/halosatrio/bebop/config"
-	"github.com/halosatrio/bebop/router"
+	"github.com/halosatrio/bebop/handlers"
 )
 
 func main() {
@@ -11,6 +11,6 @@ func main() {
 	db := config.ConnectDB()
 	defer db.Close()
 
-	r := router.SetupRouter(db)
+	r := handlers.SetupRouter(db)
 	r.Run(":8080")
 }

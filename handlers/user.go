@@ -1,20 +1,32 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/halosatrio/bebop/models"
-	"github.com/halosatrio/bebop/service"
+	"github.com/halosatrio/bebop/repository"
 	"github.com/halosatrio/bebop/utils"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserHandler struct {
-	service *service.UserService
+	repo *repository.UserRepository
 }
 
-func NewUserHandler(s *service.UserService) *UserHandler {
-	return &UserHandler{service: s}
+func NewUserHandler(r *repository.UserRepository) *UserHandler {
+	return &UserHandler{repo: r}
+}
+
+func (s *UserHandler) registerHandler(registerReq models.AuthRequset) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(registerReq.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	registerReq.Password = string(hashedPassword)
+	return s.repo.Store(registerReq)
 }
 
 func (h *UserHandler) Register(c *gin.Context) {
@@ -24,12 +36,26 @@ func (h *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	err := h.service.Register(reqRegister)
+	err := h.registerHandler(reqRegister)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "[handler][user] Failed to register user."})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "[handler][user] Failed to register user."})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Registration successful."})
+}
+
+func (s *UserHandler) authenticateHandler(email, password string) (*models.User, error) {
+	user, err := s.repo.FindByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return nil, errors.New("invalid credentials")
+	}
+
+	return user, nil
 }
 
 func (h *UserHandler) Authenticate(c *gin.Context) {
@@ -39,7 +65,7 @@ func (h *UserHandler) Authenticate(c *gin.Context) {
 		return
 	}
 
-	user, err := h.service.Authenticate(reqAuth.Email, reqAuth.Password)
+	user, err := h.authenticateHandler(reqAuth.Email, reqAuth.Password)
 	if err != nil || user == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "[handler][user] Authentication failed."})
 		return

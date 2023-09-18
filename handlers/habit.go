@@ -7,15 +7,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/halosatrio/bebop/models"
-	"github.com/halosatrio/bebop/service"
+	"github.com/halosatrio/bebop/repository"
 )
 
 type HabitHandler struct {
-	service *service.HabitService
+	repo *repository.HabitRepository
 }
 
-func NewHabitHandler(s *service.HabitService) *HabitHandler {
-	return &HabitHandler{service: s}
+func NewHabitHandler(r *repository.HabitRepository) *HabitHandler {
+	return &HabitHandler{repo: r}
+}
+
+func (r *HabitHandler) createHabitRepo(h *models.Habit) error {
+	return r.repo.CreateHabit(h)
 }
 
 func (h *HabitHandler) CreateHabit(c *gin.Context) {
@@ -46,7 +50,7 @@ func (h *HabitHandler) CreateHabit(c *gin.Context) {
 	habit.Title = req.Title
 	habit.WeeklyGoal = req.WeeklyGoal
 
-	err := h.service.CreateHabit(&habit)
+	err := h.createHabitRepo(&habit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "[handler][habit] Failed to create habit.", "message": err})
 		return
@@ -55,10 +59,14 @@ func (h *HabitHandler) CreateHabit(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Habit successfully created!"})
 }
 
+func (s *HabitHandler) getHabitsByUserID(userID uuid.UUID) ([]models.Habit, error) {
+	return s.repo.FindByUserID(userID)
+}
+
 func (h *HabitHandler) GetHabits(c *gin.Context) {
 	userID, _ := c.MustGet("user_id").(string)
 
-	habits, err := h.service.GetHabitsByUserID(uuid.MustParse(userID))
+	habits, err := h.getHabitsByUserID(uuid.MustParse(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "[handler][habit] Failed to fetch habits."})
 		return
