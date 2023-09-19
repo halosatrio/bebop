@@ -25,6 +25,7 @@ func SetupRouter(db *sql.DB) *gin.Engine {
 	private.Use(utils.JWTAuth())
 	private.POST("/create-habit", habitHandler.CreateHabit)
 	private.GET("/habits", habitHandler.GetHabits)
+	private.GET("/habit/:id", habitHandler.GetHabit)
 
 	// r.POST("/create-habit", middleware.JWTAuth(), habitHandler.CreateHabit)
 	// r.GET("/habits/:user_id", middleware.JWTAuth(), habitHandler.GetHabits)

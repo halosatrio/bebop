@@ -50,3 +50,19 @@ func (r *HabitRepository) FindByUserID(userID uuid.UUID) ([]models.Habit, error)
 	}
 	return habits, nil
 }
+
+func (r *HabitRepository) FindHabitByID(habitID uuid.UUID) (*models.Habit, error) {
+	habit := &models.Habit{}
+	query := `
+		SELECT id, user_id, title, icon, color, is_active, start_date, daily_goal, weekly_goal, created_at, updated_at
+		FROM bebop.habits WHERE id = $1
+	`
+
+	err := r.DB.QueryRow(query, habitID).Scan(&habit.ID, &habit.UserID, &habit.Title, &habit.Icon, &habit.Color, &habit.IsActive,
+		&habit.StartDate, &habit.DailyGoal, &habit.WeeklyGoal, &habit.CreatedAt, &habit.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return habit, nil
+}

@@ -21,10 +21,10 @@ type Habit struct {
 }
 
 type CreateHabitRequest struct {
-	Title      string    `json:"title" binding:"required"`
-	Icon       string    `json:"icon" binding:"required"`
-	Color      string    `json:"color" binding:"required"`
-	StartDate  time.Time `json:"start_date" binding:"required"`
-	DailyGoal  int       `json:"daily_goal" binding:"required"`
-	WeeklyGoal int       `json:"weekly_goal" binding:"required"`
+	Title      string `json:"title" binding:"required"`
+	Icon       string `json:"icon" binding:"required"`
+	Color      string `json:"color" binding:"required"`
+	StartDate  string `json:"start_date" binding:"required"`
+	DailyGoal  int    `json:"daily_goal" binding:"required"`
+	WeeklyGoal int    `json:"weekly_goal" binding:"required"`
 }

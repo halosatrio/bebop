@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -29,29 +29,28 @@ func (h *HabitHandler) CreateHabit(c *gin.Context) {
 	var req models.CreateHabitRequest
 	var habit models.Habit
 
-	fmt.Print("req start date", req.StartDate)
-
-	if req.StartDate.IsZero() {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "[handler][habit] Key: 'StartDate' Error:Field validation for 'StartDate' cannot be null"})
+	if serr := c.ShouldBindJSON(&req); serr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "[handler][habit] " + serr.Error()})
 		return
 	}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "[handler][habit] " + err.Error()})
+	parsedDate, err := time.Parse("2006-01-02", req.StartDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "[handler][habit] Invalid start_date format. It should be 'YYYY-MM-DD'."})
 		return
 	}
 
 	habit.UserID = uuid.MustParse(userID)
 	habit.IsActive = true
 	habit.Color = req.Color
-	habit.StartDate = req.StartDate
+	habit.StartDate = parsedDate
 	habit.DailyGoal = req.DailyGoal
 	habit.Icon = req.Icon
 	habit.Title = req.Title
 	habit.WeeklyGoal = req.WeeklyGoal
 
-	err := h.createHabitRepo(&habit)
-	if err != nil {
+	errx := h.createHabitRepo(&habit)
+	if errx != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "[handler][habit] Failed to create habit.", "message": err})
 		return
 	}
@@ -59,8 +58,8 @@ func (h *HabitHandler) CreateHabit(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Habit successfully created!"})
 }
 
-func (s *HabitHandler) getHabitsByUserID(userID uuid.UUID) ([]models.Habit, error) {
-	return s.repo.FindByUserID(userID)
+func (r *HabitHandler) getHabitsByUserID(userID uuid.UUID) ([]models.Habit, error) {
+	return r.repo.FindByUserID(userID)
 }
 
 func (h *HabitHandler) GetHabits(c *gin.Context) {
@@ -73,4 +72,20 @@ func (h *HabitHandler) GetHabits(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, habits)
+}
+
+func (r *HabitHandler) getHabitByID(habitID uuid.UUID) (*models.Habit, error) {
+	return r.repo.FindHabitByID(habitID)
+}
+
+func (h *HabitHandler) GetHabit(c *gin.Context) {
+	habitID := c.Param("id")
+
+	habit, err := h.getHabitByID(uuid.MustParse(habitID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch the habit."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "200", "data": habit})
 }
