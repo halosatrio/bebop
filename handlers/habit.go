@@ -30,13 +30,23 @@ func (h *HabitHandler) CreateHabit(c *gin.Context) {
 	var habit models.Habit
 
 	if serr := c.ShouldBindJSON(&req); serr != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "[handler][habit] " + serr.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": "Failed",
+			"data":    nil,
+			"error":   "[handler][habit] " + serr.Error(),
+		})
 		return
 	}
 
 	parsedDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "[handler][habit] Invalid start_date format. It should be 'YYYY-MM-DD'."})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": "Failed",
+			"data":    nil,
+			"error":   "[handler][habit] Invalid start_date format. It should be 'YYYY-MM-DD'.",
+		})
 		return
 	}
 
@@ -51,11 +61,19 @@ func (h *HabitHandler) CreateHabit(c *gin.Context) {
 
 	errx := h.createHabitRepo(&habit)
 	if errx != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "[handler][habit] Failed to create habit.", "message": err})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "Failed",
+			"data":    nil,
+			"error":   "[handler][habit] Failed to create habit. " + errx.Error(),
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Habit successfully created!"})
+	c.JSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": "Habit successfully created!",
+	})
 }
 
 func (r *HabitHandler) getHabitsByUserID(userID uuid.UUID) ([]models.Habit, error) {
@@ -67,11 +85,20 @@ func (h *HabitHandler) GetHabits(c *gin.Context) {
 
 	habits, err := h.getHabitsByUserID(uuid.MustParse(userID))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "[handler][habit] Failed to fetch habits."})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "Failed",
+			"data":    nil,
+			"error":   "[handler][habit] Failed to fetch habits.",
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, habits)
+	c.JSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": "Success",
+		"data":    habits,
+	})
 }
 
 func (r *HabitHandler) getHabitByID(habitID uuid.UUID) (*models.Habit, error) {
@@ -83,9 +110,18 @@ func (h *HabitHandler) GetHabit(c *gin.Context) {
 
 	habit, err := h.getHabitByID(uuid.MustParse(habitID))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch the habit."})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "Failed",
+			"data":    nil,
+			"error":   "Failed to fetch the habit.",
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "200", "data": habit})
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "200",
+		"message": "Success",
+		"data":    habit,
+	})
 }
