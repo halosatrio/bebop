@@ -22,9 +22,9 @@ func GenerateJWT(user *models.User) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
-func ErrorResponseUnauthorizedJwt(c *gin.Context, status int, message string) {
-	c.JSON(status, gin.H{
-		"status":  status,
+func ErrorResponseUnauthorizedJwt(c *gin.Context, message string) {
+	c.JSON(http.StatusUnauthorized, gin.H{
+		"status":  http.StatusUnauthorized,
 		"message": "Failed",
 		"data":    nil,
 		"error":   "[middleware][jwt] " + message,
@@ -40,14 +40,14 @@ func JWTAuth() gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 
 		if authHeader == "" {
-			ErrorResponseUnauthorizedJwt(c, http.StatusUnauthorized, "[middleware][jwt] Authorization header prefix is not provided")
+			ErrorResponseUnauthorizedJwt(c, "[middleware][jwt] Authorization header prefix is not provided")
 			c.Abort()
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			ErrorResponseUnauthorizedJwt(c, http.StatusUnauthorized, "[middleware][jwt] Invalid or missing Bearer token")
+			ErrorResponseUnauthorizedJwt(c, "[middleware][jwt] Invalid or missing Bearer token")
 			c.Abort()
 			return
 		}
@@ -58,14 +58,14 @@ func JWTAuth() gin.HandlerFunc {
 		})
 
 		if err != nil {
-			ErrorResponseUnauthorizedJwt(c, http.StatusUnauthorized, "[middleware][jwt] Invalid token")
+			ErrorResponseUnauthorizedJwt(c, "[middleware][jwt] Invalid token")
 			c.Abort()
 			return
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok || !token.Valid {
-			ErrorResponseUnauthorizedJwt(c, http.StatusUnauthorized, "[middleware][jwt] Invalid token")
+			ErrorResponseUnauthorizedJwt(c, "[middleware][jwt] Invalid token")
 			c.Abort()
 			return
 		}
