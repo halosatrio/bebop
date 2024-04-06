@@ -32,29 +32,17 @@ func (s *UserHandler) registerHandler(registerReq models.AuthRequset) error {
 func (h *UserHandler) Register(c *gin.Context) {
 	var reqRegister models.AuthRequset
 	if err := c.ShouldBindJSON(&reqRegister); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "Failed",
-			"data":    nil,
-			"error":   "[handler][user] " + err.Error(),
-		})
+		utils.ErrorResponseDataNull(c, http.StatusBadRequest, "[handler][user] "+err.Error())
 		return
 	}
 
 	err := h.registerHandler(reqRegister)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  http.StatusInternalServerError,
-			"message": "Failed",
-			"data":    nil,
-			"error":   "[handler][user] Failed to register user.",
-		})
+		utils.ErrorResponseDataNull(c, http.StatusInternalServerError, "[handler][user] Failed to register user.")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"status":  http.StatusOK,
-		"message": "Registration successful.",
-	})
+
+	utils.SuccessResponseWithMessage(c, http.StatusOK, "Registration successful!")
 }
 
 func (s *UserHandler) authenticateHandler(email, password string) (*models.User, error) {
@@ -74,34 +62,19 @@ func (s *UserHandler) authenticateHandler(email, password string) (*models.User,
 func (h *UserHandler) Authenticate(c *gin.Context) {
 	var reqAuth models.AuthRequset
 	if err := c.ShouldBindJSON(&reqAuth); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "Failed",
-			"data":    nil,
-			"error":   err.Error(),
-		})
+		utils.ErrorResponseDataNull(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	user, err := h.authenticateHandler(reqAuth.Email, reqAuth.Password)
 	if err != nil || user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"status":  http.StatusUnauthorized,
-			"message": "Failed",
-			"data":    nil,
-			"error":   "[handler][user] Authentication failed.",
-		})
+		utils.ErrorResponseDataNull(c, http.StatusUnauthorized, "[handler][user] Authentication failed.")
 		return
 	}
 
 	token, err := utils.GenerateJWT(user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  http.StatusInternalServerError,
-			"message": "Failed",
-			"data":    nil,
-			"error":   "[handler][user] Failed to generate token.",
-		})
+		utils.ErrorResponseDataNull(c, http.StatusInternalServerError, "[handler][user] Failed to generate token.")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{

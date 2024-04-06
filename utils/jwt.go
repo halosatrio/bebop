@@ -22,6 +22,15 @@ func GenerateJWT(user *models.User) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
+func ErrorResponseUnauthorizedJwt(c *gin.Context, status int, message string) {
+	c.JSON(status, gin.H{
+		"status":  status,
+		"message": "Failed",
+		"data":    nil,
+		"error":   "[middleware][jwt] " + message,
+	})
+}
+
 // this function identify as middleware
 // should be in different package: middleware
 func JWTAuth() gin.HandlerFunc {
@@ -31,24 +40,14 @@ func JWTAuth() gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"status":  http.StatusUnauthorized,
-				"message": "Failed",
-				"data":    nil,
-				"error":   "[middleware][jwt] Authorization header prefix is not provided",
-			})
+			ErrorResponseUnauthorizedJwt(c, http.StatusUnauthorized, "[middleware][jwt] Authorization header prefix is not provided")
 			c.Abort()
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"status":  http.StatusUnauthorized,
-				"message": "Failed",
-				"data":    nil,
-				"error":   "[middleware][jwt] Invalid or missing Bearer token",
-			})
+			ErrorResponseUnauthorizedJwt(c, http.StatusUnauthorized, "[middleware][jwt] Invalid or missing Bearer token")
 			c.Abort()
 			return
 		}
@@ -59,24 +58,14 @@ func JWTAuth() gin.HandlerFunc {
 		})
 
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"status":  http.StatusUnauthorized,
-				"message": "Failed",
-				"data":    nil,
-				"error":   "[middleware][jwt] Invalid token",
-			})
+			ErrorResponseUnauthorizedJwt(c, http.StatusUnauthorized, "[middleware][jwt] Invalid token")
 			c.Abort()
 			return
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"status":  http.StatusUnauthorized,
-				"message": "Failed",
-				"data":    nil,
-				"error":   "[middleware][jwt] Invalid token",
-			})
+			ErrorResponseUnauthorizedJwt(c, http.StatusUnauthorized, "[middleware][jwt] Invalid token")
 			c.Abort()
 			return
 		}

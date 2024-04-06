@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/halosatrio/bebop/models"
 	"github.com/halosatrio/bebop/repository"
+	"github.com/halosatrio/bebop/utils"
 )
 
 type HabitHandler struct {
@@ -30,23 +31,13 @@ func (h *HabitHandler) CreateHabit(c *gin.Context) {
 	var habit models.Habit
 
 	if serr := c.ShouldBindJSON(&req); serr != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "Failed",
-			"data":    nil,
-			"error":   "[handler][habit] " + serr.Error(),
-		})
+		utils.ErrorResponseDataNull(c, http.StatusBadRequest, "[handler][habit] "+serr.Error())
 		return
 	}
 
 	parsedDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"status":  http.StatusBadRequest,
-			"message": "Failed",
-			"data":    nil,
-			"error":   "[handler][habit] Invalid start_date format. It should be 'YYYY-MM-DD'.",
-		})
+		utils.ErrorResponseDataNull(c, http.StatusBadRequest, "[handler][habit] Invalid start_date format. It should be 'YYYY-MM-DD'.")
 		return
 	}
 
@@ -61,19 +52,11 @@ func (h *HabitHandler) CreateHabit(c *gin.Context) {
 
 	errx := h.createHabitRepo(&habit)
 	if errx != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  http.StatusInternalServerError,
-			"message": "Failed",
-			"data":    nil,
-			"error":   "[handler][habit] Failed to create habit. " + errx.Error(),
-		})
+		utils.ErrorResponseDataNull(c, http.StatusInternalServerError, "[handler][habit] Failed to create habit. "+errx.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  http.StatusOK,
-		"message": "Habit successfully created!",
-	})
+	utils.SuccessResponseWithMessage(c, http.StatusOK, "Habit is successfully created!")
 }
 
 func (r *HabitHandler) getHabitsByUserID(userID uuid.UUID) ([]models.Habit, error) {
@@ -85,20 +68,11 @@ func (h *HabitHandler) GetHabits(c *gin.Context) {
 
 	habits, err := h.getHabitsByUserID(uuid.MustParse(userID))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  http.StatusInternalServerError,
-			"message": "Failed",
-			"data":    nil,
-			"error":   "[handler][habit] Failed to fetch habits.",
-		})
+		utils.ErrorResponseDataNull(c, http.StatusInternalServerError, "[handler][habit] Failed to fetch habits.")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  http.StatusOK,
-		"message": "Success",
-		"data":    habits,
-	})
+	utils.SuccessResponseWithData(c, http.StatusOK, habits)
 }
 
 func (r *HabitHandler) getHabitByID(habitID uuid.UUID) (*models.Habit, error) {
@@ -110,18 +84,9 @@ func (h *HabitHandler) GetHabit(c *gin.Context) {
 
 	habit, err := h.getHabitByID(uuid.MustParse(habitID))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  http.StatusInternalServerError,
-			"message": "Failed",
-			"data":    nil,
-			"error":   "Failed to fetch the habit.",
-		})
+		utils.ErrorResponseDataNull(c, http.StatusInternalServerError, "Failed to fetch the habit.")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":  "200",
-		"message": "Success",
-		"data":    habit,
-	})
+	utils.SuccessResponseWithData(c, http.StatusOK, habit)
 }
